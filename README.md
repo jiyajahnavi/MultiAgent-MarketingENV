@@ -39,28 +39,21 @@
 
 ## Table of Contents
 
-- [Quick Start](#quick-start)
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-- [Run / Demo Instructions](#run--demo-instructions)
 - [Architecture](#architecture)
 - [The Six Agents](#the-six-agents)
-- [Agent Cognitive Architecture](#agent-cognitive-architecture)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Run](#run)
+- [The Simulation Loop Architecture](#the-simulation-loop-architecture)
 - [Reward Function](#reward-function)
 - [Pipeline Stage Rewards / Collaboration / Penalties](#pipeline-stage-rewards--collaboration--penalties)
 - [Five Adversarial Scenarios](#five-adversarial-scenarios)
 - [Training Pipeline](#training-pipeline)
-- [Training Data Format](#training-data-format)
-- [Trained Model Weights](#trained-model-weights)
-- [Frontend](#frontend)
-- [Supported Models](#supported-models)
-- [API Reference](#api-reference)
 - [Project Structure](#project-structure)
 - [Configuration](#configuration)
-- [Environment Variables](#environment-variables)
-- [Market Configuration](#market-configuration)
-- [Day Structure](#day-structure)
-- [Key Design Decisions](#key-design-decisions)
+- [License](#license)
+- [Author](#author)
+- [Hackathon](#hackathon)
 
 ---
 
