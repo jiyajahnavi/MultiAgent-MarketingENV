@@ -1,3 +1,12 @@
+---
+title: MultiAgent Marketing ENV
+emoji: 🤖
+colorFrom: purple
+colorTo: blue
+sdk: docker
+pinned: false
+---
+
 # Multi-Agent Marketing Workflow OpenEnv Environment
 
 This project is a fully compliant OpenEnv environment that simulates a real-world marketing team workflow. An RL agent must decide which simulated tools to use at each step to complete a marketing task successfully.
