@@ -17,3 +17,11 @@ difficulty:
   hard:
     - scheduled_post
     - campaign_bundle
+sdk: docker
+title: MultiAgent Marketing ENV
+emoji: 🤖
+colorFrom: purple
+colorTo: blue
+sdk: docker
+app_file: server/app.py
+pinned: false
