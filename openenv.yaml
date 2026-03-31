@@ -1,0 +1,19 @@
+name: marketing-workflow-env
+description: Simulates a real-world marketing team workflow where an agent must coordinate tools to create publishable content.
+
+tasks:
+  - social_post
+  - product_promotion
+  - brand_ad
+  - scheduled_post
+  - campaign_bundle
+
+difficulty:
+  easy:
+    - social_post
+  medium:
+    - product_promotion
+    - brand_ad
+  hard:
+    - scheduled_post
+    - campaign_bundle

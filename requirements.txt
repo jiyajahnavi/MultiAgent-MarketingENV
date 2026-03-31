@@ -1,0 +1,9 @@
+openenv
+fastapi
+pydantic
+google-generativeai
+uvicorn
+python-dotenv
+httpx
+jinja2
+python-multipart

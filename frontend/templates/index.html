@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-agent Marketing ENV</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- GSAP for animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <!-- tsParticles -->
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles-engine@2.11.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles-slim@2.11.0"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+
+<body class="bg-gray-900 text-white min-h-screen overflow-x-hidden flex flex-col font-sans">
+
+    <!-- Custom Cursor -->
+    <div id="custom-cursor"></div>
+
+    <!-- Particles Background Container -->
+    <div id="tsparticles" class="absolute inset-0 z-0 pointer-events-none"></div>
+
+    <!-- Navigation -->
+    <nav class="relative z-10 glass-panel border-b border-gray-700 p-4 shrink-0 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <h1 class="text-xl font-bold tracking-wider relative flex items-center">
+                <span class="text-cyan-400 mr-2">Multi-agent</span> Marketing ENV
+            </h1>
+        </div>
+        <div class="flex gap-4 items-center">
+            <button id="history-btn"
+                class="glass-button text-sm px-4 py-2 font-semibold hover:bg-cyan-600 transition-colors flex items-center gap-2">
+                <span>📋 History</span>
+            </button>
+            <select id="task-select"
+                class="glass-input text-sm px-3 py-2 rounded-lg cursor-pointer outline-none w-48 focus:ring-2 focus:ring-cyan-500">
+                <option value="social_post">Social Post (Easy)</option>
+                <option value="product_promotion">Product Promo (Medium)</option>
+                <option value="brand_ad">Brand Ad (Medium)</option>
+                <option value="scheduled_post">Scheduled Post (Hard)</option>
+                <option value="campaign_bundle">Campaign Bundle (Hard)</option>
+            </select>
+            <button id="reset-btn"
+                class="glass-button text-sm px-4 py-2 font-semibold hover:bg-cyan-600 transition-colors">
+                Initialize Env
+            </button>
+            <button id="run-next-btn"
+                class="glass-button text-sm px-4 py-2 font-semibold bg-emerald-600/20 shadow-[0_0_10px_rgba(16,185,129,0.3)] hover:bg-emerald-600/40 transition-colors flex items-center gap-2">
+                <span>Run Next Agent</span>
+                <span id="run-spinner"
+                    class="hidden w-3 h-3 border-2 border-emerald-400 border-t-white rounded-full animate-spin"></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Dynamic Layout -->
+    <main class="relative z-10 flex-1 flex flex-col w-full h-full min-h-0">
+
+        <div class="grid grid-cols-12 gap-6 p-6 flex-1 min-h-0">
+            <!-- Left Panel: Context -->
+            <section class="col-span-3 glass-panel rounded-2xl p-5 flex flex-col gap-4 overflow-y-auto">
+                <h2 class="text-lg font-bold text-gray-300 border-b border-gray-700 pb-2">Active Task Object</h2>
+                <div id="task-info" class="flex flex-col gap-3">
+                    <div class="glass-subpanel p-3 rounded">
+                        <span class="text-xs uppercase text-gray-400 block mb-1">Task ID</span>
+                        <span id="c-task-id" class="text-base text-cyan-300 font-mono">None</span>
+                    </div>
+                    <div class="glass-subpanel p-3 rounded">
+                        <span class="text-xs uppercase text-gray-400 block mb-1">Description</span>
+                        <span id="c-task-desc" class="text-sm text-gray-200 leading-snug">Initialize environment to load
+                            a task.</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 mt-2">
+                        <div class="glass-subpanel p-3 rounded text-center">
+                            <span class="text-xs text-gray-400 block">Step Count</span>
+                            <span id="c-task-steps" class="text-2xl font-bold text-white">0</span> <span
+                                class="text-xs text-gray-500">/ 10</span>
+                        </div>
+                    </div>
+                </div>
+
+                <h2 class="text-lg font-bold text-gray-300 border-b border-gray-700 pb-2 mt-4">Agent Activity Log</h2>
+                <div id="action-log" class="flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-2 text-sm pr-2">
+                    <!-- Action logs injected here -->
+                </div>
+            </section>
+
+            <!-- Center Panel: Environment Observation -->
+            <section class="col-span-6 flex flex-col gap-6 overflow-hidden">
+
+                <!-- 3D Avatar Container -->
+                <div
+                    class="glass-panel rounded-2xl p-5 h-64 flex flex-col items-center justify-center relative overflow-hidden shrink-0">
+                    <!-- Agent Overlay Display -->
+                    <div class="absolute top-4 left-4 z-20 flex flex-col">
+                        <span class="text-[10px] uppercase text-gray-400 tracking-wider">Active Orchestrator
+                            Agent</span>
+                        <span id="c-active-agent" class="text-xl font-mono text-cyan-300 drop-shadow-md">Idle</span>
+                    </div>
+
+                    <div id="avatar-container" class="absolute inset-0 z-0"></div>
+
+                    <div
+                        class="relative z-10 p-3 rounded-lg glass-subpanel text-center backdrop-blur-md opacity-90 pointer-events-none w-max mx-auto mt-auto mb-2">
+                        <span class="text-xs text-gray-200">Total Workflow Reward</span>
+                        <div id="c-total-reward"
+                            class="text-3xl font-extrabold text-green-400 shadow-sm drop-shadow-lg">0.00</div>
+                    </div>
+                </div>
+
+                <!-- Environment State Flags -->
+                <div class="glass-panel rounded-2xl p-5 flex-1 flex flex-col overflow-y-auto custom-scrollbar">
+                    <h2 class="text-lg font-bold text-gray-300 border-b border-gray-700 pb-2 mb-4">Observation State
+                    </h2>
+                    <div class="grid grid-cols-2 gap-4" id="obs-flags">
+                        <!-- Dynamic Observation Flags Injected -->
+                    </div>
+
+                    <h2 class="text-lg font-bold text-gray-300 border-b border-gray-700 pb-2 mb-4 mt-6">Latest Info</h2>
+                    <div id="c-info-msg" class="glass-subpanel p-4 rounded text-sm text-gray-300 italic min-h-[4rem]">
+                        Ready.
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Panel: Agent Actions -->
+            <section class="col-span-3 glass-panel rounded-2xl p-5 flex flex-col gap-4 overflow-y-auto custom-scrollbar"
+                id="right-panel">
+
+                <h2
+                    class="text-lg font-bold text-gray-300 border-b border-gray-700 pb-2 flex items-center justify-between">
+                    <span>Tool Override Dashboard</span>
+                </h2>
+
+                <!-- Mode Toggles -->
+                <div class="flex items-center gap-2 p-1 bg-gray-800/50 rounded-lg w-full mb-2 border border-gray-700">
+                    <button
+                        class="mode-toggle flex-1 text-xs py-1.5 px-2 rounded bg-cyan-600/30 text-cyan-300 font-bold border border-cyan-500/50"
+                        data-mode="auto" id="toggle-auto">
+                        Auto Agent Mode
+                    </button>
+                    <button
+                        class="mode-toggle flex-1 text-xs py-1.5 px-2 rounded text-gray-400 font-bold hover:text-white"
+                        data-mode="manual" id="toggle-manual">
+                        Manual Mode
+                    </button>
+                </div>
+
+                <div class="text-[11px] text-gray-400 mb-1" id="mode-desc">
+                    System executes agents sequentially. Standby orchestrator.
+                </div>
+
+                <!-- Tools Container -->
+                <div class="flex flex-col gap-3 transition-opacity duration-300 opacity-30 pointer-events-none"
+                    id="tool-buttons">
+                    <button class="tool-btn generate_image group" data-tool="generate_image">
+                        <span class="icon">🖼️</span> <span class="label">Generate Image</span>
+                    </button>
+                    <button class="tool-btn write_caption group" data-tool="write_caption">
+                        <span class="icon">✍️</span> <span class="label">Write Caption</span>
+                    </button>
+                    <button class="tool-btn add_hashtags group" data-tool="add_hashtags">
+                        <span class="icon">#️⃣</span> <span class="label">Add Hashtags</span>
+                    </button>
+                    <button class="tool-btn review_content group" data-tool="review_content">
+                        <span class="icon">🔎</span> <span class="label">Review Content</span>
+                    </button>
+                    <button class="tool-btn schedule_post group" data-tool="schedule_post">
+                        <span class="icon">📅</span> <span class="label">Schedule Post</span>
+                    </button>
+                    <button class="tool-btn publish_post group" data-tool="publish_post">
+                        <span class="icon">🚀</span> <span class="label">Publish Post</span>
+                    </button>
+                </div>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <footer class="relative z-10 w-full text-center pb-2 text-[15px] text-gray-500">
+            Developed by Team One Way for Meta PyTorch OpenEnv Hackathon
+        </footer>
+
+    </main>
+
+    <!-- History Modal -->
+    <div id="history-modal"
+        class="fixed inset-0 z-50 hidden items-center justify-center p-6 bg-black/60 backdrop-blur-sm">
+        <div class="glass-panel w-full max-w-4xl max-h-full rounded-2xl flex flex-col p-6 overflow-hidden shadow-2xl scale-95 opacity-0 transition-all duration-300"
+            id="hm-content">
+            <div class="flex justify-between items-center border-b border-gray-700 pb-3 mb-4 shrink-0">
+                <h2 class="text-xl font-bold text-cyan-400">Episode Trajectory History</h2>
+                <button id="close-modal-btn" class="text-gray-400 hover:text-white transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="flex-1 min-h-0 overflow-y-auto custom-scrollbar flex flex-col gap-6">
+                <!-- Chart Area -->
+                <div class="glass-subpanel p-4 rounded-xl shrink-0 h-64 border border-gray-700">
+                    <canvas id="rewardChart"></canvas>
+                </div>
+
+                <!-- History Log Area -->
+                <div class="flex flex-col gap-3 pb-4" id="history-list">
+                    <!-- History lines injected here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-3 pointer-events-none"></div>
+
+    <!-- Script loading -->
+    <script src="/static/particles.js"></script>
+    <script src="/static/avatar.js"></script>
+    <script src="/static/app.js"></script>
+</body>
+
+</html>
