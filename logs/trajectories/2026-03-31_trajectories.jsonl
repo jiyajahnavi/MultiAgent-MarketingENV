@@ -23,3 +23,12 @@
 {"timestamp": "2026-03-31T21:17:32.793030", "task_id": "social_post", "step_number": 1, "agent_name": "CreativeDesignerAgent", "action": {"tool": "generate_image", "parameters": {}}, "reward": 0.15, "done": false}
 {"timestamp": "2026-03-31T21:17:34.654553", "task_id": "social_post", "step_number": 2, "agent_name": "CopywriterAgent", "action": {"tool": "write_caption", "parameters": {}}, "reward": 0.15, "done": false}
 {"timestamp": "2026-03-31T21:17:41.354177", "task_id": "social_post", "step_number": 3, "agent_name": "PublishingManagerAgent", "action": {"tool": "publish_post", "parameters": {}}, "reward": 1.25, "done": true}
+{"timestamp": "2026-03-31T22:48:58.138905", "task_id": "social_post", "step_number": 1, "agent_name": "CreativeDesignerAgent", "action": {"tool": "generate_image", "parameters": {}}, "reward": 0.15, "done": false}
+{"timestamp": "2026-03-31T22:49:12.041033", "task_id": "social_post", "step_number": 2, "agent_name": "CopywriterAgent", "action": {"tool": "write_caption", "parameters": {}}, "reward": 0.15, "done": false}
+{"timestamp": "2026-03-31T22:49:16.969382", "task_id": "social_post", "step_number": 3, "agent_name": "PublishingManagerAgent", "action": {"tool": "publish_post", "parameters": {}}, "reward": 1.25, "done": true}
+{"timestamp": "2026-03-31T22:49:40.105555", "task_id": "social_post", "step_number": 4, "agent_name": "PublishingManagerAgent", "action": {"tool": "publish_post", "parameters": {}}, "reward": 0.0, "done": true}
+{"timestamp": "2026-03-31T22:49:43.585410", "task_id": "scheduled_post", "step_number": 1, "agent_name": "CreativeDesignerAgent", "action": {"tool": "generate_image", "parameters": {}}, "reward": 0.15, "done": false}
+{"timestamp": "2026-03-31T22:49:44.815341", "task_id": "scheduled_post", "step_number": 2, "agent_name": "CopywriterAgent", "action": {"tool": "write_caption", "parameters": {}}, "reward": 0.15, "done": false}
+{"timestamp": "2026-03-31T22:49:46.211737", "task_id": "scheduled_post", "step_number": 3, "agent_name": "SocialMediaStrategistAgent", "action": {"tool": "add_hashtags", "parameters": {}}, "reward": 0.15, "done": false}
+{"timestamp": "2026-03-31T22:49:48.436072", "task_id": "scheduled_post", "step_number": 4, "agent_name": "CampaignSchedulerAgent", "action": {"tool": "schedule_post", "parameters": {}}, "reward": 0.15, "done": false}
+{"timestamp": "2026-03-31T22:49:50.318719", "task_id": "scheduled_post", "step_number": 5, "agent_name": "PublishingManagerAgent", "action": {"tool": "publish_post", "parameters": {}}, "reward": 1.25, "done": true}
