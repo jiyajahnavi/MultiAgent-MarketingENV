@@ -589,94 +589,10 @@ training_config = {
 4. **Polish Stage** – Fine-tune on mixed difficulties, emphasis on generalization
 
 ---
-
-## Trained Model Weights
-
-### Available Model Checkpoints
-
-```
-models/
-├── checkpoint_foundation_v1/        # After foundation stage (easy tasks only)
-│   ├── model.safetensors
-│   ├── adapter_config.json          # LoRA configuration
-│   ├── adapter_model.bin            # LoRA weights
-│   └── tokenizer.model
-├── checkpoint_intermediate_v2/      # After intermediate stage (medium tasks)
-│   └── ...
-├── checkpoint_advanced_v3/          # After advanced stage (hard tasks)
-│   └── ...
-└── checkpoint_final_v4/             # Final polished model
-    ├── model.safetensors            # Full model 7B parameters
-    ├── adapter_config.json
-    ├── adapter_model.bin
-    ├── tokenizer.model
-    ├── training_config.yaml         # Training parameters
-    ├── performance_metrics.json      # Final metrics
-    └── README.md                     # Checkpoint details
-```
-
-### Model Details
-
-- **Base Model**: Llama 2 7B Chat (or compatible)
-- **Fine-tuning Method**: LoRA (Low-Rank Adaptation)
-- **LoRA Rank**: 16
-- **LoRA Alpha**: 32
-- **Target Modules**: `q_proj, v_proj`
-- **Training Framework**: TRL (Transformers Reinforcement Learning)
-- **Algorithm**: GRPO (Group Relative Policy Optimization)
-
-### Performance Metrics
-
-```json
-{
-  "model": "checkpoint_final_v4",
-  "eval_metrics": {
-    "easy_task_success_rate": 0.98,
-    "medium_task_success_rate": 0.87,
-    "hard_task_success_rate": 0.72,
-    "average_reward": 0.81,
-    "collaboration_effectiveness": 0.85,
-    "compliance_rate": 0.95,
-    "scenario_performance": {
-      "standard": 0.92,
-      "algorithm_disruption": 0.85,
-      "competitive_surge": 0.78,
-      "compliance_tightening": 0.75,
-      "perfect_storm": 0.68
-    }
-  }
-}
-```
-
-### Model Usage
-
-```python
-from transformers import AutoTokenizer, AutoModelForCausalLM
-from peft import PeftModel
-
-# Load base model
-base_model = AutoModelForCausalLM.from_pretrained("meta-llama/Llama-2-7b-chat")
-tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-2-7b-chat")
-
-# Load fine-tuned LoRA adapter
-model = PeftModel.from_pretrained(base_model, "models/checkpoint_final_v4")
-
-# Generate agent decisions
-prompt = "You are a copywriter agent..."
-inputs = tokenizer(prompt, return_tensors="pt")
-outputs = model.generate(**inputs, max_length=256)
-```
-
----
-
----
-
 ## Project Structure
 
-### Directory Tree
-
 ```
-MultiAgent-MarketingWorkflow-OpenENV/
+MultiAgent-MarketingENV/
 │
 ├── agents/                                 # Multi-agent coordination framework
 │   ├── base_agent.py                      # BaseAgent class (LLM-driven action decisions)
@@ -813,8 +729,6 @@ DISTRIBUTED_TRAINING=false                        # Distributed training
 NUM_WORKERS=8                                     # Number of training workers
 ```
 
----
-
 ## Market Configuration
 
 ### Market States & Dynamics
@@ -857,17 +771,24 @@ class MarketState:
 
 This project is licensed under the MIT License - see [LICENSE](LICENSE) file for details.
 
+------
+
+## Author
+
+**Team One Way** – Developers behind this project:
+
+| Name                  | Role               |
+|-----------------------|--------------------|
+| Jiya Jahnavi          | Co-Developer       |
+| Aditya Kumar Singh    | Lead Developer     |
+| Rishabh Yadav         | Co-Developer       |
+
 ---
-##  Author
 
-Developed by **Team One Way**.
-Jiya Jahnavi
-Aditya Kumar Singh (Lead)
-Rishabh Yadav
+## Hackathon
 
----
+This project was developed as part of the hackathon:
 
-##  Hackathon
+**Meta PyTorch OpenEnv Hackathon 2026**  
+Hosted by Scaler School of Technology.
 
-This project was created for the **Meta PyTorch OpenEnv Hackathon 2026** 
----
