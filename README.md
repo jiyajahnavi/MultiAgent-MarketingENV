@@ -1,3 +1,4 @@
+<div align="center">
 <pre>
  ███╗   ███╗██╗   ██╗██╗  ████████╗██╗    █████╗  ██████╗ ███████╗███ ██╗  ██  ██████╗
 ████╗ ████║██║   ██║██║  ╚══██╔══╝██║     ██╔══██╗██╔════╝ ██╔════╝████╗  ██║╚══██╔═╝
@@ -14,6 +15,25 @@
 ██║ ╚═╝ ██║██║  ██║██║    ██║██║   ██╗███████╗   ██║   ██║██║ ╚████║╚██████╔╝    ███████╗██║ ╚████║ ╚████╔╝ 
 ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝    ╚═╝╚═╝   ╚═╝╚══════╝    ╚═╝  ╚═╝╚═╝   ╚═══╝ ╚═════╝     ╚══════╝╚═╝  ╚═══╝  ╚═══╝  
 </pre>
+
+### An OpenEnv-Compatible AI Agent Training Environment
+
+*Train and evaluate multi-agent AI systems on real-world marketing tasks — each agent performs a specialized role (e.g., content strategist, social media planner) to generate and optimize content, images, and campaigns. Tasks are graded by difficulty (easy, medium, hard) to simulate real-world marketing workflows and team collaboration.*
+
+<br/>
+
+![OpenEnv](https://img.shields.io/badge/OpenEnv-Compatible-brightgreen?style=for-the-badge)
+![Python](https://img.shields.io/badge/Python-3.11-blue?style=for-the-badge&logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.111-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![HuggingFace](https://img.shields.io/badge/HuggingFace-Spaces-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black)
+![License](https://img.shields.io/badge/License-MIT-red?style=for-the-badge)
+
+<br/>
+</div>
+
+- **Space URL**: https://huggingface.co/spaces/jiyajahnavi/MultiAgent-MarketingENV
+- **API Base**: https://jiyajahnavi-multiagent-marketingenv.hf.space/docs
 
 
 # Multi-Agent Marketing Workflow OpenEnv Environment
