@@ -64,116 +64,6 @@
 
 ---
 
-## Quick Start
-
-Get up and running in 3 steps:
-
-```bash
-# 1. Install dependencies
-pip install -r requirements.txt
-
-# 2. Set environment variables
-export OPENAI_API_KEY="your-api-key-here"
-
-# 3. Run the server
-python -m server.app
-```
-
-The server will start at `http://localhost:8000`. Open a browser and navigate to the dashboard.
-
----
-
-## Prerequisites
-
-- **Python**: 3.10 or higher
-- **pip**: Latest version
-- **API Keys**: OpenAI API key
-- **Docker** : For containerized deployment
-- **Git**: For version control
-
-
-## Installation
-
-### Step 1: Clone Repository
-
-```bash
-git clone https://github.com/jiyajahnavi/MultiAgent-MarketingENV.git
-cd MultiAgent-MarketingENV
-```
-
-### Step 2: Install Dependencies
-
-```bash
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install Python dependencies
-pip install -r requirements.txt
-```
-
-### Step 3: Configure Environment
-
-Create a `.env` file in the project root:
-
-```env
-OPENAI_API_KEY=your-actual-api-key
-OPENENV_DEBUG=false
-LOG_LEVEL=INFO
-```
-
-### Step 4: Verify Installation
-
-```bash
-python -c "import openenv; from fastapi import FastAPI; print('Installation successful')"
-```
-
----
-
-## Run / Demo Instructions
-
-### Option 1: Local Development Server
-
-```bash
-python -m server.app
-```
-
-Access the dashboard at: `http://localhost:8000`
-
-### Option 2: Docker Deployment
-
-```bash
-# Build Docker image
-docker build -t marketing-openenv .
-
-# Run container
-docker run -p 8000:8000 -e OPENAI_API_KEY="your-key" marketing-openenv
-```
-
-### Option 3: Baseline Agent Demo
-
-Run the OPENAI baseline agent (requires server running):
-
-```bash
-# Terminal 1: Start server
-python -m server.app
-
-# Terminal 2: Run baseline
-python baseline/run_baseline.py
-```
-
-### Option 4: Headless Batch Episodes
-
-Run multiple episodes without UI:
-
-```bash
-python agents/run_agents.py \
-  --num_episodes 10 \
-  --tasks social_post product_promotion brand_ad \
-  --output logs/batch_run.jsonl
-```
-
----
 
 ## Architecture
 
@@ -304,86 +194,87 @@ The system includes six specialized agents, each with unique roles in the market
 
 ---
 
-## Agent Cognitive Architecture
+## Prerequisites
 
-Each agent implements a **memory-augmented decision-making system** inspired by Smallville-style architectures:
+- **Python**: 3.10 or higher
+- **pip**: Latest version
+- **API Keys**: OpenAI API key
+- **Docker** : For containerized deployment
+- **Git**: For version control
 
-### Memory System
 
-Each agent maintains a **MemoryStream** with three components:
+## Installation
 
-```python
-class AgentMemory:
-    recency: List[Memory]      # Most recent events (weight: 0.5)
-    importance: List[Memory]   # High-impact decisions (weight: 0.35)
-    relevance: List[Memory]    # Task-relevant history (weight: 0.15)
-    max_entries: int = 200     # Total memory capacity
+### Step 1: Clone Repository
+
+```bash
+git clone https://github.com/jiyajahnavi/MultiAgent-MarketingENV.git
+cd MultiAgent-MarketingENV
 ```
 
-### Decision-Making Loop
+### Step 2: Install Dependencies
 
-```
-┌─────────────────┐
-│  Observation    │
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────────────┐
-│ Retrieve Relevant       │
-│ Memories (recency +     │
-│ importance + relevance) │
-└────────┬────────────────┘
-         │
-         ▼
-┌─────────────────────────┐
-│ Construct LLM Prompt    │
-│ with:                   │
-│  • Current state        │
-│  • Relevant memories    │
-│  • Task context         │
-│  • Tool options         │
-└────────┬────────────────┘
-         │
-         ▼
-┌─────────────────────────┐
-│ Call LLM (Gemini)       │
-│ to generate action      │
-│ parameters              │
-└────────┬────────────────┘
-         │
-         ▼
-┌─────────────────────────┐
-│ Parse & Validate        │
-│ Action Parameters       │
-└────────┬────────────────┘
-         │
-         ▼
-┌─────────────────────────┐
-│ Execute Tool Call       │
-└────────┬────────────────┘
-         │
-         ▼
-┌─────────────────────────┐
-│ Store Result in Memory  │
-│ (with importance score) │
-└─────────────────────────┘
+```bash
+# Install Python dependencies
+pip install -r requirements.txt
 ```
 
-### Reflection Mechanism
+### Step 3: Configure Environment
 
-After each action, agents reflect on outcomes:
+Create a `.env` file in the project root:
 
-```python
-def reflect(self, outcome, reward):
-    """Agent reflects on action effectiveness"""
-    if reward > threshold:
-        self.memory.mark_important(outcome)        # Remember successes
-        self.strategy.reinforce_pattern(action)    # Repeat effective patterns
-    else:
-        self.memory.mark_learning(outcome)         # Learn from failures
-        self.strategy.avoid_pattern(action)        # Avoid ineffective approaches
+```env
+OPENAI_API_KEY=your-actual-api-key
+OPENENV_DEBUG=false
+LOG_LEVEL=INFO
 ```
 ---
+
+## Run 
+
+### Option 1: Local Development Server
+
+```bash
+python -m server.app
+```
+
+Access the dashboard at: `http://localhost:8000`
+
+### Option 2: Docker Deployment
+
+```bash
+# Build Docker image
+docker build -t marketing-openenv .
+
+# Run container
+docker run -p 8000:8000 -e OPENAI_API_KEY="your-key" marketing-openenv
+```
+
+### Option 3: Baseline Agent Demo
+
+Run the OPENAI baseline agent (requires server running):
+
+```bash
+# Terminal 1: Start server
+python -m server.app
+
+# Terminal 2: Run baseline
+python baseline/run_baseline.py
+```
+
+### Option 4: Headless Batch Episodes
+
+Run multiple episodes without UI:
+
+```bash
+python agents/run_agents.py \
+  --num_episodes 10 \
+  --tasks social_post product_promotion brand_ad \
+  --output logs/batch_run.jsonl
+```
+
+---
+
 ## The Simulation Loop Architecture
 
 ```mermaid
@@ -699,105 +590,6 @@ training_config = {
 
 ---
 
-## Training Data Format
-
-### JSONL Trajectory Format
-
-Each episode is recorded as a single JSON line:
-
-```json
-{
-  "episode_id": "2026-03-31_ep_0001",
-  "task": "product_promotion",
-  "difficulty": "medium",
-  "scenario": 2,
-  "total_reward": 0.85,
-  "num_steps": 8,
-  "success": true,
-  "timestamp": "2026-03-31T14:23:45Z",
-  "steps": [
-    {
-      "step_id": 0,
-      "agent": "social_media_strategist",
-      "observation": {
-        "task_state": "IDEATION",
-        "target_audience": "18-35, tech-savvy",
-        "product": "Premium Coffee Machine",
-        "competitors": 3,
-        "market_conditions": "stable"
-      },
-      "action": {
-        "tool": "hashtag_tool",
-        "parameters": {
-          "keywords": ["coffee", "premium", "gadget"],
-          "platforms": ["instagram", "tiktok"],
-          "num_hashtags": 8
-        }
-      },
-      "result": {
-        "hashtags": ["#PremiumCoffee", "#EspressoLovers", ...],
-        "confidence": 0.92
-      },
-      "reward": {
-        "stage_reward": 0.2,
-        "quality_bonus": 0.05,
-        "steps_penalty": 0.0,
-        "total": 0.25
-      },
-      "timestamp": "2026-03-31T14:23:46Z"
-    },
-    {
-      "step_id": 1,
-      "agent": "copywriter",
-      "observation": {...},
-      "action": {...},
-      "result": {...},
-      "reward": {...},
-      "timestamp": "2026-03-31T14:23:48Z"
-    }
-  ],
-  "agents_used": ["social_media_strategist", "copywriter", "creative_designer", "content_reviewer", "publisher"],
-  "events_triggered": [2, 4],
-  "final_metrics": {
-    "engagement_rate": 0.12,
-    "reach": 15000,
-    "conversions": 45,
-    "roi": 3.2
-  }
-}
-```
-
-### Training Data Organization
-
-```
-training_data/
-├── task_social_post/
-│   ├── scenario_1/
-│   │   ├── episodes_1-100.jsonl
-│   │   └── episodes_101-200.jsonl
-│   ├── scenario_2/
-│   │   └── ...
-│   └── ...
-├── task_product_promotion/
-│   └── ...
-├── task_brand_ad/
-│   └── ...
-├── task_scheduled_post/
-│   └── ...
-└── task_campaign_bundle/
-    └── ...
-```
-
-### Data Statistics
-
-- **Total Episodes Collected**: ~25,000 (5 tasks × 5 scenarios × 1,000 episodes)
-- **Total Steps**: ~400,000 (avg 16 steps per episode)
-- **Agent Actions**: ~2.4M individual tool calls
-- **Data Size**: ~8GB (compressed JSONL)
-- **Time to Collect**: ~48 hours (parallel collection across 8 workers)
-
----
-
 ## Trained Model Weights
 
 ### Available Model Checkpoints
@@ -959,128 +751,22 @@ MultiAgent-MarketingWorkflow-OpenENV/
 │   ├── scheduler.py                       # Campaign scheduler
 │   └── __pycache__/
 │
-├── training/                               # Training Infrastructure
-│   ├── collector.py                       # Trajectory collector
-│   ├── trainer.py                         # Remote trainer
-│   ├── train_worker.py                    # Training worker (TRL GRPO)
-│   └── train_loop.py                      # Full training loop
-│
-├── training_data/                          # Expert trajectories (JSONL)
-│   └── (organized by task/scenario)
-│
-├── integrations/                           # External Integrations
-│   └── sheets.py                          # Google Sheets dashboard
-│
 ├── utils/                                  # Utilities
 │   ├── llm_client.py                      # LLM integration
 │   ├── trajectory_logger.py               # Trajectory logging
 │   └── __pycache__/
 │
-├── docs/                                   # Documentation
-│   ├── ARCHITECTURE.md                    # Detailed architecture
-│   ├── API_GUIDE.md                       # API usage guide
-│   └── TRAINING_GUIDE.md                  # Training instructions
-│
 ├── Dockerfile                              # Docker configuration
 ├── openenv.yaml                            # OpenEnv descriptor
 ├── pyproject.toml                          # Project metadata
 ├── requirements.txt                        # Python dependencies
-├── .env.example                            # Environment template
-├── README.md                               # This file
-└── main.py                                 # Entry point
+├── .gitignore                              # gitignore
+└──  README.md                               # This file
+
 ```
-
-### Component Descriptions
-
-- **`agents/`** – Specialized marketing agents with memory and LLM-backed decision making
-- **`baseline/`** – Reference baseline implementation for comparison
-- **`env/`** – Core OpenEnv implementation with market dynamics
-- **`frontend/`** – React + Phaser 3D web dashboard
-- **`graders/`** – Task-specific evaluation functions
-- **`logs/`** – Episode trajectories and batch results
-- **`models/`** – Pydantic type models
-- **`server/`** – FastAPI REST API and WebSocket server
-- **`tasks/`** – 5 marketing task implementations
-- **`tools/`** – 6 simulated marketing tools
-- **`training/`** – Distributed training pipeline (TRL + Unsloth)
-- **`utils/`** – Helper utilities for LLM and logging
-- **`docs/`** – Extended documentation
-
 ---
 
 ## Configuration
-
-### Configuration Files
-
-The project uses multiple configuration sources, applied in order of precedence:
-
-1. **Environment Variables** (`.env` file)
-2. **Config file** (`config.yaml` or passed via CLI)
-3. **Defaults** (hardcoded in code)
-
-### Configuration Structure
-
-```python
-# config/default.yaml
-environment:
-  name: "marketing-workflow-env"
-  seed: 42
-  max_steps_per_episode: 20
-  
-tasks:
-  enabled: ["social_post", "product_promotion", "brand_ad", "scheduled_post", "campaign_bundle"]
-  difficulties: ["easy", "medium", "hard"]
-
-scenarios:
-  enabled: [1, 2, 3, 4, 5]
-  random_events: true
-
-agents:
-  num_agents: 6
-  model_provider: "gemini"
-  memory_size: 200
-  reflection_enabled: true
-
-rewards:
-  task_completion_weight: 0.35
-  efficiency_weight: 0.20
-  quality_weight: 0.15
-  collaboration_weight: 0.15
-  exploration_weight: 0.10
-  
-market:
-  initial_customers: 1000
-  sentiment_volatility: 0.2
-  competition_factor: 1.0
-
-server:
-  host: "0.0.0.0"
-  port: 8000
-  debug: false
-  cors_origins: ["*"]
-
-logging:
-  level: "INFO"
-  output_dir: "logs"
-  save_trajectories: true
-```
-
----
-
-## Environment Variables
-
-### Required Variables
-
-```env
-# LLM Configuration
-GEMINI_API_KEY=<your-gemini-api-key>              # Google Generative AI key
-
-# Optional: Alternative LLM Providers
-ANTHROPIC_API_KEY=<your-anthropic-key>           # For Claude models
-MISTRAL_API_KEY=<your-mistral-key>               # For Mistral models
-REPLICATE_API_TOKEN=<your-replicate-token>       # For Llama models via Replicate
-VLLM_BASE_URL=http://localhost:8000               # For local vLLM server
-```
 
 ### Server Configuration
 
@@ -1165,159 +851,23 @@ class MarketState:
     compliance_requirements: List[str] = field(default_factory=list)
     strictness_level: float = 0.5        # 0-1
 ```
-
-### Market Events
-
-Market events are triggered during scenarios to create adversarial conditions:
-
-```python
-@dataclass
-class MarketEvent:
-    """Random market events"""
-    event_id: str
-    event_type: EventType      # Algorithm change, Competitor action, Regulation, etc.
-    severity: float = 0.5      # 0-1 impact magnitude
-    duration: int = 5          # Lasted for N steps
-    affected_metrics: List[str] = field(default_factory=list)
-    triggered_at_step: int = 0
-```
-
----
-
-## Key Design Decisions
-
-### 1. Multi-Agent Coordination Over Single Agent
-
-**Decision**: Implement 6 specialized agents rather than one omniscient model
-
-**Rationale**:
-- Mirrors real marketing teams with specialized roles
-- Teaches RL agent to coordinate and delegate
-- Easier to interpret decisions (agent X did Y for reason Z)
-- Allows testing collaboration importance
-- Scalable to more complex workflows
-
-**Trade-off**: Increased complexity, more LLM calls
-
-### 2. LLM-Based Agent Decisions
-
-**Decision**: Use LLM for all agent decisions via prompting
-
-**Rationale**:
-- Enables complex reasoning without explicit programming
-- Agents can explain decisions in natural language
-- Easy to update strategies by changing prompts
-- Agents can adapt to new scenarios without retraining
-- Aligns with goal of studying LLM agent coordination
-
-**Trade-off**: API costs, latency concerns (mitigated by caching)
-
-### 3. Memory Augmented Agents
-
-**Decision**: Each agent maintains 200-entry memory stream (recency + importance + relevance)
-
-**Rationale**:
-- Enables agents to learn from history
-- Importance scoring allows forgetting less critical events
-- Models human-like selective memory
-- Provides interpretability (can inspect what agent remembers)
-- Handles longer episodes without context explosion
-
-**Trade-off**: Additional state to manage, increased LLM prompt length
-
-### 4. Six Reward Components
-
-**Decision**: Composite reward with 6 independent components vs. single score
-
-**Rationale**:
-- Task completion alone is insufficient metric
-- Collaboration bonus encourages multi-agent coordination
-- Penalties deter taking shortcuts (e.g., skipping review)
-- Efficiency rewards encourage lean workflows
-- Allows fine-grained ablation studies
-
-**Trade-off**: Complex reward engineering, hard to debug
-
-### 5. Adversarial Scenarios
-
-**Decision**: 5 progressive scenarios with random event injection
-
-**Rationale**:
-- Tests generalization (agents must handle varied conditions)
-- Scenario 1 = easy baseline, Scenario 5 = maximal complexity
-- Random events simulate real-world unpredictability
-- Prevents agents from memorizing fixed solutions
-- Allows measuring robustness to adversity
-
-**Trade-off**: Harder to achieve high success rates, longer training time
-
-### 6. Simulated Tools (Not Real APIs)
-
-**Decision**: Implement tools as fast simulations rather than calling real services
-
-**Rationale**:
-- No API keys needed for external services (Twitter, Facebook, etc.)
-- Fast iteration (skip network latency)
-- Reproducible behavior (seeded randomness)
-- Cost-effective (no API charges)
-- Can inject difficulty via simulator parameters
-
-**Trade-off**: Simulations must be realistic enough to be meaningful
-
-### 7. JSONL Trajectory Format
-
-**Decision**: Store episodes as single JSON lines (one per line)
-
-**Rationale**:
-- Streaming-friendly (can process episodes as they complete)
-- Parallel collection/processing
-- Easy integration with training pipelines
-- Compresses well (8GB for 25K episodes)
-- Compatible with standard RL tools
-
-**Trade-off**: Not ideal for random access, need parsing layer
-
-### 8. LoRA Fine-tuning Strategy
-
-**Decision**: Fine-tune base model with LoRA adapters instead of full fine-tune
-
-**Rationale**:
-- 99% parameter reduction (16→7B model fits on single A100)
-- Enables multi-task adaptation (one base, many adapters)
-- Fast training (5e-5 lr, achieves convergence in 10k steps)
-- Easy to merge/compare checkpoints
-- Compatible with inference optimization (4-bit quantization)
-
-**Trade-off**: Reduced model capacity for task-specific knowledge
-
-### 9. OpenEnv Compliance
-
-**Decision**: Fully comply with OpenEnv standard specification
-
-**Rationale**:
-- Enables integration with OpenEnv ecosystem tools
-- Standardized evaluation framework
-- Community alignment
-- Reproducibility across implementations
-- Clear interface contracts
-
-**Trade-off**: Some design constraints (action/observation format)
-
-### 10. Docker-First Deployment
-
-**Decision**: Provide Dockerfile for all deployment scenarios
-
-**Rationale**:
-- Reproducibility across machines
-- Easy cloud deployment (GCP, AWS, Azure)
-- Isolates dependencies
-- Enables horizontal scaling
-- Simplifies CI/CD integration
-
-**Trade-off**: Added complexity for local development
-
 ---
 
 ## License
 
 This project is licensed under the MIT License - see [LICENSE](LICENSE) file for details.
+
+---
+##  Author
+
+Developed by **Team One Way**.
+Jiya Jahnavi
+Aditya Kumar Singh (Lead)
+Rishabh Yadav
+
+---
+
+##  Hackathon
+
+This project was created for the **Meta PyTorch OpenEnv Hackathon 2026** 
+---
