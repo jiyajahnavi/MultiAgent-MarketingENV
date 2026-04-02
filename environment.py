@@ -52,7 +52,7 @@ class ResearchEnvironment:
         self._state = ResearchState()
         self._task_config: dict = {}
         self._designed_experiments: dict = {}  # id → spec
-        self._experiment_results: dict = {}    # id → results
+        self._experiment_results: dict = {}  # id → results
         self._action_history: list = []
         self._papers_read: set = set()
         self._final_answer: str = ""
@@ -63,7 +63,9 @@ class ResearchEnvironment:
     # RESET
     # ═══════════════════════════════════════════════════════════════
 
-    def reset(self, task_id: Optional[str] = None, seed: int = 42) -> ResearchObservation:
+    def reset(
+        self, task_id: Optional[str] = None, seed: int = 42
+    ) -> ResearchObservation:
         """
         Initialize a new episode for the given task.
 
@@ -86,10 +88,7 @@ class ResearchEnvironment:
         self._final_answer = ""
         self._experiment_count = 0
 
-        episode_id = str(uuid.uuid5(
-            uuid.NAMESPACE_DNS,
-            f"{task_id}-{seed}"
-        ))
+        episode_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, f"{task_id}-{seed}"))
 
         self._state = ResearchState(
             episode_id=episode_id,
@@ -106,8 +105,11 @@ class ResearchEnvironment:
                 for d in self._task_config["available_datasets"]
             ],
             available_methods=[
-                {"method_id": m["method_id"], "name": m["name"],
-                 "description": m["description"]}
+                {
+                    "method_id": m["method_id"],
+                    "name": m["name"],
+                    "description": m["description"],
+                }
                 for m in self._task_config["available_methods"]
             ],
             current_hypothesis="",
@@ -133,16 +135,13 @@ class ResearchEnvironment:
             data={
                 "problem_statement": self._task_config["problem_statement"],
                 "available_papers": [
-                    p["paper_id"]
-                    for p in self._task_config["paper_summaries"]
+                    p["paper_id"] for p in self._task_config["paper_summaries"]
                 ],
                 "available_datasets": [
-                    d["dataset_id"]
-                    for d in self._task_config["available_datasets"]
+                    d["dataset_id"] for d in self._task_config["available_datasets"]
                 ],
                 "available_methods": [
-                    m["method_id"]
-                    for m in self._task_config["available_methods"]
+                    m["method_id"] for m in self._task_config["available_methods"]
                 ],
                 "baseline_accuracy": self._task_config["baseline_accuracy"],
                 "max_steps": self._task_config["max_steps"],
@@ -182,26 +181,31 @@ class ResearchEnvironment:
 
         # Validate action type
         if action.action_type not in VALID_ACTIONS:
-            penalty = -0.05
+            penalty = -0.10
             self._state.cumulative_reward += penalty
             self._state.step_count += 1
-            self._action_history.append({
-                "action_type": action.action_type,
-                "content": action.content,
-                "valid": False,
-            })
+            self._action_history.append(
+                {
+                    "action_type": action.action_type,
+                    "content": action.content,
+                    "valid": False,
+                }
+            )
             return self._make_observation(
                 message=f"Invalid action '{action.action_type}'. "
-                        f"Valid actions: {sorted(VALID_ACTIONS)}",
+                f"Valid actions: {sorted(VALID_ACTIONS)}",
                 reward=penalty,
             )
 
         # Record action
-        self._action_history.append({
-            "action_type": action.action_type,
-            "content": action.content,
-            "valid": True,
-        })
+        self._action_history.append(
+            {
+                "action_type": action.action_type,
+                "content": action.content,
+                "valid": True,
+            }
+        )
+
         self._state.step_count += 1
 
         # Dispatch to handler
@@ -216,6 +220,14 @@ class ResearchEnvironment:
         }
 
         obs = handler[action.action_type](action.content)
+
+        # Penalize repeated actions
+        if len(self._action_history) >= 2:
+            if (
+                self._action_history[-1]["action_type"]
+                == self._action_history[-2]["action_type"]
+            ):
+                obs.reward -= 0.03
 
         # Check episode termination
         if self._state.step_count >= self._state.max_steps and not self._state.done:
@@ -253,13 +265,11 @@ class ResearchEnvironment:
             self._papers_read.update(p["paper_id"] for p in papers)
         else:
             # Read specific paper
-            result_papers = [
-                p for p in papers if p["paper_id"] == content
-            ]
+            result_papers = [p for p in papers if p["paper_id"] == content]
             if not result_papers:
                 return self._make_observation(
                     message=f"Paper '{content}' not found. Available: "
-                            f"{[p['paper_id'] for p in papers]}",
+                    f"{[p['paper_id'] for p in papers]}",
                     reward=-0.02,
                 )
             self._papers_read.add(content)
@@ -290,6 +300,10 @@ class ResearchEnvironment:
             },
         )
 
+    def _simple_text_quality(self, text: str) -> float:
+        words = set(text.lower().split())
+        return min(len(words) / 20.0, 1.0)
+
     def _handle_propose_hypothesis(self, content: str) -> ResearchObservation:
         """Agent proposes a hypothesis based on their understanding."""
         if not content.strip():
@@ -300,15 +314,11 @@ class ResearchEnvironment:
 
         self._state.current_hypothesis = content
 
-        # Score hypothesis quality immediately
-        keywords = self._task_config.get("ground_truth_keywords", [])
-        from graders import _keyword_overlap_score
-        quality = _keyword_overlap_score(content, keywords)
+        quality = self._simple_text_quality(content)
 
-        # Bonus if papers were read first
-        papers_bonus = 0.03 if self._papers_read else 0.0
+        papers_bonus = 0.05 if self._papers_read else 0.0
 
-        reward = 0.05 + 0.10 * quality + papers_bonus
+        reward = 0.05 + 0.20 * quality + papers_bonus
         self._state.cumulative_reward += reward
 
         return self._make_observation(
@@ -327,17 +337,15 @@ class ResearchEnvironment:
         if len(parts) < 2:
             return self._make_observation(
                 message="Experiment design must specify 'method_id:dataset_id'. "
-                        f"Available methods: {[m['method_id'] for m in self._task_config['available_methods']]}. "
-                        f"Available datasets: {[d['dataset_id'] for d in self._task_config['available_datasets']]}.",
+                f"Available methods: {[m['method_id'] for m in self._task_config['available_methods']]}. "
+                f"Available datasets: {[d['dataset_id'] for d in self._task_config['available_datasets']]}.",
                 reward=-0.02,
             )
 
         method_id, dataset_id = parts[0], parts[1]
 
         # Validate method
-        valid_methods = {
-            m["method_id"] for m in self._task_config["available_methods"]
-        }
+        valid_methods = {m["method_id"] for m in self._task_config["available_methods"]}
         if method_id not in valid_methods:
             return self._make_observation(
                 message=f"Unknown method '{method_id}'. Available: {sorted(valid_methods)}",
@@ -369,7 +377,7 @@ class ResearchEnvironment:
 
         return self._make_observation(
             message=f"Experiment '{exp_id}' designed: {method_id} on {dataset_id}. "
-                    f"Use 'run_experiment' with '{exp_id}' to execute.",
+            f"Use 'run_experiment' with '{exp_id}' to execute.",
             reward=reward,
             data={
                 "experiment_id": exp_id,
@@ -385,8 +393,8 @@ class ResearchEnvironment:
         if exp_id not in self._designed_experiments:
             return self._make_observation(
                 message=f"Experiment '{exp_id}' not found. "
-                        f"Available: {list(self._designed_experiments.keys())}. "
-                        f"Design an experiment first.",
+                f"Available: {list(self._designed_experiments.keys())}. "
+                f"Design an experiment first.",
                 reward=-0.02,
             )
 
@@ -395,13 +403,12 @@ class ResearchEnvironment:
         # Check experiment budget (hard tasks)
         budget = self._task_config.get("experiment_budget", float("inf"))
         run_experiments = [
-            e for e in self._state.experiments_run
-            if e.get("status") == "completed"
+            e for e in self._state.experiments_run if e.get("status") == "completed"
         ]
         if len(run_experiments) >= budget:
             return self._make_observation(
                 message=f"Experiment budget exhausted ({budget} experiments allowed). "
-                        f"Use analyze_results or final_answer.",
+                f"Use analyze_results or final_answer.",
                 reward=-0.05,
             )
 
@@ -409,7 +416,7 @@ class ResearchEnvironment:
         if exp.get("status") == "completed":
             return self._make_observation(
                 message=f"Experiment '{exp_id}' already completed. "
-                        f"Design a new experiment or analyze results.",
+                f"Design a new experiment or analyze results.",
                 reward=-0.01,
             )
 
@@ -426,9 +433,7 @@ class ResearchEnvironment:
                 reward=0.0,
             )
 
-        base_acc = method_config["expected_accuracy"].get(
-            exp["dataset_id"], 0.5
-        )
+        base_acc = method_config["expected_accuracy"].get(exp["dataset_id"], 0.5)
 
         # Add controlled noise (seeded, so deterministic)
         noise_std = method_config.get("noise_std", 0.0)
@@ -451,20 +456,23 @@ class ResearchEnvironment:
         self._state.results_history.append(result)
 
         # Update best accuracy
+        learning_bonus = 0.0
         if accuracy > self._state.best_accuracy:
             self._state.best_accuracy = accuracy
+            learning_bonus = 0.1
 
         # Reward: proportional to improvement over baseline
         improvement = max(accuracy - self._state.baseline_accuracy, 0)
-        reward = 0.05 + 0.15 * improvement
+
+        reward = 0.05 + 0.25 * improvement + learning_bonus
         self._state.cumulative_reward += reward
 
         return self._make_observation(
             message=f"Experiment '{exp_id}' completed.\n"
-                    f"Method: {exp['method_id']}, Dataset: {exp['dataset_id']}\n"
-                    f"Accuracy: {accuracy:.4f} "
-                    f"(baseline: {self._state.baseline_accuracy:.4f}, "
-                    f"improvement: {improvement:+.4f})",
+            f"Method: {exp['method_id']}, Dataset: {exp['dataset_id']}\n"
+            f"Accuracy: {accuracy:.4f} "
+            f"(baseline: {self._state.baseline_accuracy:.4f}, "
+            f"improvement: {improvement:+.4f})",
             reward=reward,
             data=result,
         )
@@ -474,7 +482,7 @@ class ResearchEnvironment:
         if not self._state.experiments_run:
             return self._make_observation(
                 message="No experiments have been run yet. "
-                        "Design and run experiments first.",
+                "Design and run experiments first.",
                 reward=-0.02,
             )
 
@@ -491,10 +499,7 @@ class ResearchEnvironment:
                 method_accs[mid] = []
             method_accs[mid].append(r["accuracy"])
 
-        method_avg = {
-            m: sum(accs) / len(accs)
-            for m, accs in method_accs.items()
-        }
+        method_avg = {m: sum(accs) / len(accs) for m, accs in method_accs.items()}
 
         analysis = {
             "total_experiments": len(results),
@@ -507,7 +512,14 @@ class ResearchEnvironment:
             ),
         }
 
-        reward = 0.05
+        trend_bonus = 0.0
+        if len(self._state.experiments_run) >= 2:
+            last = self._state.experiments_run[-1]["accuracy"]
+            prev = self._state.experiments_run[-2]["accuracy"]
+            if last > prev:
+                trend_bonus = 0.05
+
+        reward = 0.05 + trend_bonus
         self._state.cumulative_reward += reward
 
         return self._make_observation(
@@ -535,10 +547,8 @@ class ResearchEnvironment:
         self._state.current_hypothesis = content
 
         # Check quality improvement
-        from graders import _keyword_overlap_score
-        keywords = self._task_config.get("ground_truth_keywords", [])
-        old_quality = _keyword_overlap_score(old_hypothesis, keywords)
-        new_quality = _keyword_overlap_score(content, keywords)
+        old_quality = self._simple_text_quality(old_hypothesis)
+        new_quality = self._simple_text_quality(content)
 
         quality_delta = new_quality - old_quality
 
@@ -580,7 +590,7 @@ class ResearchEnvironment:
         self._state.current_score = final_score
 
         # Reward: proportional to final score
-        reward = 0.20 * final_score
+        reward = 0.10 + 0.40 * final_score
         self._state.cumulative_reward += reward
 
         grading_detail = grade_task(state_dict)
