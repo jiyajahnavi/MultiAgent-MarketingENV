@@ -1,0 +1,54 @@
+# OpenEnv Environment Manifest
+spec_version: 1
+name: ai-research-scientist
+type: environment
+runtime: docker
+app: server.app:app
+port: 7860
+
+# Metadata
+description: >
+  AI Research Scientist Environment — an OpenEnv-compliant simulation
+  of scientific research workflows. Agents read papers, form hypotheses,
+  design and run experiments, analyze results, and draw conclusions.
+  Features 3 tasks (easy, medium, hard) with deterministic multi-factor
+  grading and dense reward signals.
+
+author: Aditya Kumar Singh
+version: 1.0.0
+
+# Task configuration
+tasks:
+  - id: task_easy_image_classification
+    difficulty: easy
+    description: Image classification research with clear signals
+    max_steps: 12
+
+  - id: task_medium_nlp_sentiment
+    difficulty: medium
+    description: NLP sentiment analysis with noisy experimental results
+    max_steps: 12
+
+  - id: task_hard_tabular_prediction
+    difficulty: hard
+    description: Tabular prediction with conflicting evidence and resource constraints
+    max_steps: 15
+
+# API endpoints
+endpoints:
+  reset: /reset
+  step: /step
+  state: /state
+  health: /health
+
+# Grading
+grading:
+  type: deterministic
+  score_range: [0.0, 1.0]
+  multi_factor: true
+  components:
+    - hypothesis_quality
+    - experiment_efficiency
+    - accuracy_improvement
+    - reasoning_consistency
+    - final_answer_quality
