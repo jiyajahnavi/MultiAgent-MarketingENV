@@ -1,4 +1,4 @@
-# 🧠 AI Research Scientist Environment
+#  AI Research Scientist Environment
 
 An **OpenEnv-compliant** environment that simulates scientific research workflows for evaluating AI reasoning agents.
 
@@ -6,7 +6,34 @@ Unlike traditional environments that focus on task execution, this environment m
 
 ---
 
-## 🏗️ Architecture
+##  Overview
+
+The **AI Research Scientist Environment** is an OpenEnv-compliant simulation designed to evaluate **scientific reasoning in AI agents**.
+
+Unlike traditional benchmarks that reward final outputs, this environment evaluates:
+
+* How agents **form hypotheses**
+* How they **design and run experiments**
+* How they **interpret results**
+* How they **improve over time**
+
+👉 This transforms evaluation from *“Did you get the answer?”*
+👉 To *“Did you think like a researcher?”*
+
+---
+
+
+###  This environment solves that
+
+It provides a **controlled simulation of real-world ML research workflows**, enabling evaluation of:
+
+* Research agents
+* AutoML systems
+* Scientific reasoning in LLMs
+
+---
+
+##  Architecture
 
 ```
 ┌─────────────────────────────────────────────────┐
@@ -37,7 +64,7 @@ Unlike traditional environments that focus on task execution, this environment m
 
 ---
 
-## 🎯 Tasks
+##  Tasks
 
 | Task | Difficulty | Steps | Domain | Challenge |
 |------|-----------|-------|--------|-----------|
@@ -47,7 +74,7 @@ Unlike traditional environments that focus on task execution, this environment m
 
 ---
 
-## 🤖 Agent Actions
+##  Agent Actions
 
 | Action | Description |
 |--------|-------------|
@@ -61,7 +88,7 @@ Unlike traditional environments that focus on task execution, this environment m
 
 ---
 
-## 📊 Reward Function
+##  Reward Function
 
 ```
 reward = f(progress, quality, efficiency, penalties)
@@ -82,7 +109,7 @@ Components:
 
 ---
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### Local Development
 
@@ -132,7 +159,7 @@ state = requests.get(f"{BASE}/state").json()
 
 ---
 
-## 📈 Score Variance
+##  Score Variance
 
 The environment produces meaningful score differences across agent quality:
 
@@ -144,7 +171,7 @@ The environment produces meaningful score differences across agent quality:
 
 ---
 
-## 📦 Project Structure
+##  Project Structure
 
 ```
 ├── models.py           # Action, Observation, State dataclasses
@@ -164,7 +191,7 @@ The environment produces meaningful score differences across agent quality:
 
 ---
 
-## ✅ Validation Checklist
+##  Validation Checklist
 
 - [x] `openenv.yaml` present and valid
 - [x] `Dockerfile` builds successfully
@@ -181,7 +208,7 @@ The environment produces meaningful score differences across agent quality:
 
 ---
 
-## 🏆 Why This Environment Stands Out
+##  Why This Environment Stands Out
 
 1. **Novel Domain**: Scientific research reasoning — not games, not coding
 2. **Multi-step Reasoning**: Agents must plan, experiment, and iterate
