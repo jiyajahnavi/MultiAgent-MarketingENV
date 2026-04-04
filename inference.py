@@ -42,93 +42,66 @@ def safe_step(env, action, step_id=None):
 # ─────────────────────────────────────────────────────────────────────────────
 
 def run_baseline_agent(env, task_id):
-    """Runs a deterministic baseline agent on a specific task."""
+    """Runs a non-deterministic baseline agent simulating actual search and evaluation."""
     task_config = TASKS[task_id]
     start_time = time.time()
 
     print(f"\nTask: {task_id}")
-    obs = env.reset(task_id=task_id, seed=42)
+    obs = env.reset(task_id=task_id, seed=random.randint(1, 10000))
     step_id = 1
 
     # Step 1: Read paper
     obs = safe_step(env, ResearchAction("read_paper", "all"), step_id)
+    step_id += 1
 
     # Step 2: Generate hypothesis
     key_finding = task_config["paper_summaries"][0].get("key_finding", "")
-    hypothesis = (
-        f"Based on prior research, {key_finding}. "
-        f"I hypothesize this method will perform best."
-    )
-
-    step_id += 1
+    hypothesis = f"Hypothesis based on {key_finding}: Randomised trials will yield best methods."
     obs = safe_step(env, ResearchAction("propose_hypothesis", hypothesis), step_id)
+    step_id += 1
 
-    # Step 3–6: Experiments
+    # Ensure dataset and methods are available
     datasets = [d["dataset_id"] for d in task_config["available_datasets"]]
     methods = [m["method_id"] for m in task_config["available_methods"]]
 
     best_acc = 0.0
     best_method, best_dataset = None, None
 
-    for method in methods[:2]:
-        if not datasets:
+    # Try UP TO 4 experiments randomly
+    for _ in range(4):
+        if not datasets or not methods:
             break
 
-        dataset = datasets[0]
+        dataset = random.choice(datasets)
+        method = random.choice(methods)
 
         # Design experiment
+        obs = safe_step(env, ResearchAction("design_experiment", f"{method}:{dataset}"), step_id)
         step_id += 1
-        obs = safe_step(
-            env,
-            ResearchAction("design_experiment", f"{method}:{dataset}"),
-            step_id,
-        )
-
+        
         exp_id = obs.data.get("experiment_id")
         if not exp_id:
             continue
 
         # Run experiment
+        obs = safe_step(env, ResearchAction("run_experiment", exp_id), step_id)
         step_id += 1
-        obs = safe_step(
-            env,
-            ResearchAction("run_experiment", exp_id),
-            step_id,
-        )
-
+        
         acc = obs.data.get("accuracy", 0.0)
 
+        # Non-deterministic outcome evaluation
         if acc > best_acc:
             best_acc = acc
             best_method = method
             best_dataset = dataset
 
     # Step: Analyze
-    step_id += 1
     obs = safe_step(env, ResearchAction("analyze_results", "all"), step_id)
-
-    # Step: Refine hypothesis
-    refined = (
-        f"Best result was {best_method} on {best_dataset} "
-        f"with accuracy {best_acc:.3f}"
-    )
-
     step_id += 1
-    obs = safe_step(
-        env,
-        ResearchAction("refine_hypothesis", refined),
-        step_id,
-    )
 
     # Step: Final answer
-    final = f"{best_method} performs best with accuracy {best_acc:.3f}"
-
-    step_id += 1
-    obs = safe_step(
-        env,
-        ResearchAction("final_answer", final),
-        step_id,
-    )
+    final = f"After extensive evaluation, {best_method} on {best_dataset} performs best with accuracy {best_acc:.3f}"
+    obs = safe_step(env, ResearchAction("final_answer", final), step_id)
 
     elapsed = time.time() - start_time
 

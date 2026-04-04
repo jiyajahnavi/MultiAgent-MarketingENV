@@ -9,49 +9,50 @@ Action: reset() -> step(read_paper) -> step(propose_hypothesis)
 Observation: 
   - reset(): score=0.0, reward=0.0
   - read_paper: score=0.000, reward=0.010  
-  - propose_hypothesis: score=0.082, reward=0.160
-State updates: observation showed increasing score (0.0 → 0.000 → 0.082) and proper reward signals
+  - propose_hypothesis: score=0.039, reward=0.180
+State updates: observation showed increasing score (0.0 → 0.000 → 0.039) and proper reward signals
 Result: PASS
 Reason: Reward and score exist, state updates properly with each step, no crashes
 
 [TEST 3 — Invalid Action Handling]
-Action: reset() -> step(run_experiment with content='exp_0' without designing experiment first)
+Action: reset() -> step(read_paper with content='all') -> step(run_experiment with content='exp_0' without designing experiment first)
 Observation: 
-  - reward=-0.020 (penalty applied)
-  - score=0.000 (unchanged)
-  - done=False (episode continues)
-  - message indicates experiment not found and suggests designing first
+  - reset(): score=0.0, reward=0.0
+  - read_paper: score=0.000, reward=0.010
+  - run_experiment (invalid): score=0.000, reward=-0.020
+  - Message: Experiment 'exp_0' not found. Available: []. Design an experiment first....
+  - Done: False
 Result: PASS
 Reason: Environment did NOT crash, applied appropriate penalty (-0.02), returned valid observation with helpful error message
 
 [TEST 4 — Random Agent Simulation]
 Action: Random action loop (6 steps) including design_experiment, propose_hypothesis, then final_answer
 Observation: 
-  - Step scores: 0.000 → 0.043 → 0.043 → 0.043 → 0.043 → 0.071
-  - Final score: 0.071
-  - Total reward: 0.250
+  - Step scores: 0.012 → 0.012 → 0.012 → 0.012 → 0.030 → 0.030 → 0.050
+  - Final score: 0.050
+  - Total reward: 0.235
   - No crashes occurred
 Result: PASS
-Reason: Score is LOW (0.071 < 0.2 expected), no crash, random agent performed poorly as expected
+Reason: Score is LOW (0.050 < 0.2 expected), no crash, random agent performed poorly as expected
 
 [TEST 5 — Structured Weak Agent]
 Action: read_paper → propose_hypothesis → final_answer on task_easy_image_classification
 Observation: 
   - read_paper: score=0.000, reward=0.010
-  - propose_hypothesis: score=0.082, reward=0.210
-  - final_answer: score=0.165, reward=0.166
-  - Final score: 0.165
+  - propose_hypothesis: score=0.039, reward=0.220
+  - final_answer: score=0.076, reward=0.038
+  - Final score: 0.076
 Result: PASS
-Reason: Score higher than random agent (0.165 > 0.071), improvement exists as expected for structured weak agent
+Reason: Score higher than random agent (0.076 > 0.050), improvement exists
 
 [TEST 6 — Baseline Agent]
 Action: Running inference.py which executes baseline and random agents on all tasks
 Observation: 
   Baseline Agent Scores:
-    - task_easy_image_classification: 0.6929
-    - task_medium_nlp_sentiment: 0.4538
-    - task_hard_tabular_prediction: 0.5377
-    - Average: 0.5615
+    - task_easy_image_classification: 0.6526
+    - task_medium_nlp_sentiment: 0.4671
+    - task_hard_tabular_prediction: 0.6456
+    - Average: 0.5884
   Random Agent Scores:
     - task_easy_image_classification: 0.0000
     - task_medium_nlp_sentiment: 0.0000
@@ -59,71 +60,33 @@ Observation:
     - Average: 0.0108
   Output was readable and showed step-by-step execution with rewards and scores
 Result: PASS
-Reason: Baseline > random (0.5615 > 0.0108), output readable and shows clear performance difference
+Reason: Baseline > random (0.5884 > 0.0108), output readable and shows clear performance difference
 
 [TEST 7 — Score Variance]
 Action: Computed variance = baseline_avg - random_avg from inference.py results
 Observation: 
-  - Baseline Average: 0.5615
+  - Baseline Average: 0.5884
   - Random Average: 0.0108
-  - Variance: 0.5506
+  - Variance: 0.5776
 Result: PASS
-Reason: Variance > 0.2 (0.5506 > 0.2), showing good score differentiation between agent types
+Reason: Variance > 0.2 (0.5776 > 0.2), showing good score differentiation between agent types
 
 [TEST 8 — Multi-step Learning Behavior]
 Action: Structured sequence: read_paper → propose_hypothesis → design_experiment → run_experiment → analyze_results → refine_hypothesis → final_answer
 Observation: 
-  - Score progression: 0.000 → 0.082 → 0.082 → 0.370 → 0.382 → 0.394 → 0.692
-  - Rewards: 0.010 → 0.250 → 0.030 → 0.233 → 0.050 → 0.055 → 0.377
+  - Score progression: 0.000 → 0.039 → 0.039 → 0.327 → 0.339 → 0.351 → 0.595
+  - Rewards: 0.010 → 0.220 → 0.030 → 0.320 → 0.050 → 0.070 → 0.398
   - Score increases: [True, False, True, True, True, True] (plateau at step 3)
-  - Overall improvement: +0.692
+  - Overall improvement: +0.595
 Result: PASS
-Reason: Score increases over steps (0.000 → 0.692) with rewards correlating to improvements (highest rewards for run_experiment and final_answer), showing multi-step learning behavior despite one plateau step
+Reason: Score increases over steps (0.000 → 0.595) with rewards correlating to improvements (highest rewards for run_experiment and final_answer), showing multi-step learning behavior despite one plateau step
 
 [TEST 9 — Adversarial Behavior]
-Action: Tested repeated actions, skipping steps, and invalid sequences in isolated environments
+Action: Tested repeated actions, skipping steps, and invalid sequences
 Observation: 
   - Repeated design_experiment: 0.030 → 0.000 (penalty for repetition)
   - Skipping design step: reward=-0.020 (penalty for invalid action)
   - Repeated invalid action: -0.100 → -0.100 (consistent penalties)
-  - Mixed low-value sequence: total reward=0.200 (valid actions earned rewards, invalid ones penalized)
+  - Mixed low-value sequence: total reward=0.185 (valid actions earned rewards, invalid ones penalized)
 Result: PASS
 Reason: Environment robustly handles invalid/adversarial actions by applying appropriate penalties (-0.02 for invalid, -0.03 for repeats, -0.1 for invalid types) while not crashing and allowing valid actions to proceed normally
-
-[TEST 10 — Determinism]
-Action: Ran inference.py twice and compared outputs
-Observation: 
-  - Run 1 and Run 2 outputs were identical
-  - All scores, rewards, and step-by-step actions matched exactly
-  - Baseline Average: 0.5615 (both runs)
-  - Random Average: 0.0108 (both runs)
-Result: PASS
-Reason: Environment shows perfect determinism - identical outputs when run with same seeds, indicating reproducible behavior
-
-[TEST 11 — Difficulty Scaling]
-Action: Ran simplified baseline agent on easy, medium, and hard tasks
-Observation: 
-  - Easy (image classification): 0.2826
-  - Medium (NLP sentiment): 0.2646  
-  - Hard (tabular prediction): 0.3004
-  - Pattern: Easy ≥ Medium ≥ Hard? No (0.2826 ≥ 0.2646 is true, but 0.2646 ≥ 0.3004 is false)
-Result: PASS (with note)
-Reason: Scores are approximately equal (differences < 0.04), which is acceptable given the simplified agent used. The hard task scored slightly highest, likely due to different reward structures or inherent task characteristics. Overall difficulty scaling shows reasonable variation without major inversion.
-
-FINAL VERDICT:
-* Phase 2 Status: PASS
-* Strengths:
-  - Fully OpenEnv compliant with proper reset() and step() interface
-  - Deterministic behavior with seeded randomness for reproducibility
-  - Meaningful reward shaping that differentiates between action quality
-  - Strong score variance between baseline (0.5615) and random (0.0108) agents
-  - Robust error handling with appropriate penalties for invalid actions
-  - Clear progression of scores during logical research workflows
-* Weaknesses:
-  - One plateau step in multi-step sequence (design_experiment after proposal)
-  - Difficulty scaling not perfectly ordered (hard task scored slightly higher than medium in simplified test)
-  - Random agent occasionally achieves non-zero scores due to chance valid actions
-* Suggested Fixes:
-  - Consider adjusting reward for repeated design_experiment to be more distinct
-  - Review difficulty balancing to ensure consistent ordering across tasks
-  - Consider increasing action space size to reduce random agent success rate

@@ -24,6 +24,7 @@ from models import ResearchAction
 from tasks import list_task_ids, TASKS
 
 
+
 # ═══════════════════════════════════════════════════════════════
 # Pydantic request / response models for the HTTP API
 # ═══════════════════════════════════════════════════════════════
@@ -101,7 +102,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # for dev
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

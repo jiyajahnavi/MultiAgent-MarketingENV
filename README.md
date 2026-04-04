@@ -1,3 +1,14 @@
+---
+title: AI Research Scientist Environment
+emoji: 🧠
+colorFrom: blue
+colorTo: purple
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
+
 #  AI Research Scientist Environment
 
 An **OpenEnv-compliant** environment that simulates scientific research workflows for evaluating AI reasoning agents.

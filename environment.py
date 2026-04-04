@@ -80,6 +80,8 @@ class ResearchEnvironment:
             task_id = "task_easy_image_classification"
 
         self._task_config = get_task(task_id)
+        if seed is not None:
+            random.seed(seed)
         self._rng = random.Random(seed)
         self._designed_experiments = {}
         self._experiment_results = {}
@@ -170,6 +172,9 @@ class ResearchEnvironment:
         Returns:
             ResearchObservation with results, reward, and done flag.
         """
+        if not self._task_config:
+            self.reset()
+            
         if self._state.done:
             return ResearchObservation(
                 message="Episode already finished. Call reset() to start a new one.",
@@ -223,17 +228,20 @@ class ResearchEnvironment:
 
         # Penalize repeated actions
         if len(self._action_history) >= 2:
-            if (
-                self._action_history[-1]["action_type"]
-                == self._action_history[-2]["action_type"]
-            ):
+            if self._action_history[-1]["action_type"] == self._action_history[-2]["action_type"]:
                 obs.reward -= 0.03
+                self._state.cumulative_reward -= 0.03
+                obs.message += "\n[Penalty: Repeated action type: -0.03]"
 
         # Check episode termination
         if self._state.step_count >= self._state.max_steps and not self._state.done:
             self._state.done = True
             obs.done = True
-            obs.message += "\n[Episode terminated: max steps reached]"
+            if action.action_type != "final_answer":
+                penalty = -0.2
+                obs.reward += penalty
+                self._state.cumulative_reward += penalty
+                obs.message += f"\n[Episode terminated: max steps reached without final_answer. Penalty: {penalty}]"
 
         # Update running score
         state_dict = self._get_state_dict_for_grading()
@@ -381,6 +389,7 @@ class ResearchEnvironment:
             reward=reward,
             data={
                 "experiment_id": exp_id,
+                "exp_id": exp_id,
                 "method_id": method_id,
                 "dataset_id": dataset_id,
             },
@@ -435,11 +444,31 @@ class ResearchEnvironment:
 
         base_acc = method_config["expected_accuracy"].get(exp["dataset_id"], 0.5)
 
-        # Add controlled noise (seeded, so deterministic)
-        noise_std = method_config.get("noise_std", 0.0)
-        noise = self._rng.gauss(0, noise_std)
+        # Add uncertainty to simulate difficulty and varied setups safely
+        noise = self._rng.uniform(-0.02, 0.03)
+        # Medium/Hard tasks get slightly more variance
+        if self._task_config.get("difficulty") == "hard":
+            noise += self._rng.uniform(-0.04, 0.04)
+        elif self._task_config.get("difficulty") == "medium":
+            noise += self._rng.uniform(-0.02, 0.02)
+            
         accuracy = max(0.0, min(1.0, base_acc + noise))
         accuracy = round(accuracy, 4)
+
+        # Reward logic heavily favors improvement, penalizes re-runs
+        if any(r["method_id"] == exp["method_id"] and r["dataset_id"] == exp["dataset_id"] for r in self._state.experiments_run):
+            # Penalty for exact duplicate experiment
+            reward = -0.05
+            message = "Penalty: Exact duplicate experiment run."
+        else:
+            improvement = accuracy - self._state.baseline_accuracy
+            if accuracy > self._state.best_accuracy:
+                self._state.best_accuracy = accuracy
+                reward = 0.02 + min(0.3, max(0.0, improvement))
+                message = "Experiment successful. New best accuracy achieved!"
+            else:
+                reward = -0.01  # small penalty for no improvement
+                message = "Experiment failed to improve over standard/best accuracy."
 
         # Store results
         result = {
@@ -454,25 +483,14 @@ class ResearchEnvironment:
         self._experiment_results[exp_id] = result
         self._state.experiments_run.append(result)
         self._state.results_history.append(result)
-
-        # Update best accuracy
-        learning_bonus = 0.0
-        if accuracy > self._state.best_accuracy:
-            self._state.best_accuracy = accuracy
-            learning_bonus = 0.1
-
-        # Reward: proportional to improvement over baseline
-        improvement = max(accuracy - self._state.baseline_accuracy, 0)
-
-        reward = 0.05 + 0.25 * improvement + learning_bonus
+        
         self._state.cumulative_reward += reward
 
         return self._make_observation(
             message=f"Experiment '{exp_id}' completed.\n"
             f"Method: {exp['method_id']}, Dataset: {exp['dataset_id']}\n"
-            f"Accuracy: {accuracy:.4f} "
-            f"(baseline: {self._state.baseline_accuracy:.4f}, "
-            f"improvement: {improvement:+.4f})",
+            f"Accuracy: {accuracy:.4f} \n"
+            f"{message}",
             reward=reward,
             data=result,
         )
@@ -589,8 +607,13 @@ class ResearchEnvironment:
         final_score = grade_episode(state_dict)
         self._state.current_score = final_score
 
-        # Reward: proportional to final score
-        reward = 0.10 + 0.40 * final_score
+        # Reward: based on best accuracy tracking and decision
+        accuracy_gain = self._state.best_accuracy - self._state.baseline_accuracy
+        reward = 0.10 + 0.50 * final_score
+        
+        if len(self._state.experiments_run) == 0:
+             reward -= 0.1 # Penalty for guessing without experiments
+             
         self._state.cumulative_reward += reward
 
         grading_detail = grade_task(state_dict)
@@ -599,6 +622,7 @@ class ResearchEnvironment:
             message=(
                 f"Episode complete!\n"
                 f"Final Score: {final_score:.4f}\n"
+                f"Final Decision Outcome: {self._state.best_accuracy:.4f}\n"
                 f"Cumulative Reward: {self._state.cumulative_reward:.4f}\n"
                 f"Grading breakdown: {grading_detail['components']}"
             ),
